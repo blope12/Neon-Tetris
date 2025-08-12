@@ -10,7 +10,7 @@
   <canvas id="bgCanvas"></canvas>
   <div class="wrapper" style="z-index:2">
     <div class="stage">
-      <canvas id="game" width="240" height="480"></canvas>
+    <canvas id="game" width="360" height="720"></canvas>
       <div class="fade-overlay" id="fxOverlay"></div>
     </div>
 
@@ -20,12 +20,14 @@
                 <div class="stat">Lines: <span id="lines">0</span></div>
                 <button id="start" class="btn">Start</button>
             <button id="restart" class="btn" style="display:none;margin-top:6px;">Restart</button>
-
-            <div class="leaderboard" style="margin-top:15px;">
-                <h3 style="font-weight:700;text-align:center;margin-bottom:6px;">Leaderboard</h3>
-                <ol id="leaderboardList" style="list-style-position: inside; padding-left:0; font-size:14px; color:var(--muted);"></ol>
-            </div>
     </div>
+<div id="gameOverModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Game Over!</h2>
+    <p>Your score: <span id="finalScore">0</span></p>
+    <button id="closeModalBtn" class="btn">Close</button>
+  </div>
+</div>
 
 
 

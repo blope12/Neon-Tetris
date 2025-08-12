@@ -46,54 +46,80 @@ canvas{
 }
 #game{
   background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+  width: 90vw;
+  height: calc(90vw * 2); /* keep 1:2 ratio */
+  max-width: 360px;
+  max-height: 720px;
 }
 
 /* glass UI */
-.ui{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-  margin-left:8px;
-  background:rgba(255,255,255,0.03);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding:12px;
-  border-radius:12px;
-  box-shadow:0 6px 30px rgba(0,0,0,0.5);
-  min-width:120px;
-  z-index:3;
+.ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 32px;
+  background: rgba(12, 18, 30, 0.6);
+  border-radius: 24px;
+  box-shadow:
+    0 0 12px 2px rgba(124, 242, 255, 0.25),
+    0 0 40px 10px rgba(124, 242, 255, 0.12);
+  backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(124, 242, 255, 0.3);
+  min-width: 180px;
+  user-select: none;
+  z-index: 3;
+  font-family: 'Orbitron', sans-serif;
+  color: #7cf2ff;
+  transition: box-shadow 0.3s ease;
 }
-.stat{
-  background:rgba(255,255,255,0.03);
-  padding:8px 12px;
-  border-radius:8px;
-  font-size:14px;
-  min-width:100px;
-  text-align:center;
+/* subtle hover glow */
+.ui:hover {
+  box-shadow:
+    0 0 19px 2px rgba(124, 242, 255, 0.25),
+    0 0 45px 10px rgba(124, 242, 255, 0.12);
 }
-.btn{
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  border:none;
-  padding:10px 14px;
-  border-radius:10px;
-  font-weight:700;
-  cursor:pointer;
-  color:#001;
-  box-shadow:0 6px 20px rgba(124,242,255,0.12);
-  width:100%;
-  
-  /* button hover scale & glow */
+.stat {
+  background: rgba(255, 255, 255, 0.07);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  min-width: 120px;
+  text-align: center;
+  box-shadow:
+    inset 0 0 6px rgba(124, 242, 255, 0.15);
+  color: #a0dfff;
+  font-weight: 600;
+  user-select: text;
+}
+/* buttons vibe more neon and chunky */
+.btn {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border: none;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #001;
+  box-shadow:
+    0 5px 25px rgba(124, 242, 255, 0.3),
+    0 0 5px 3px rgba(124, 242, 255, 0.4);
+  width: 100%;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
-  will-change: transform, box-shadow;
 }
-.btn:hover{
-  transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(124, 242, 255, 0.25);
+
+.btn:hover {
+  transform: scale(1.07);
+  box-shadow:
+    0 5px 25px rgba(124, 242, 255, 0.3),
+    0 0 5px 3px rgba(124, 242, 255, 0.4);
 }
-.btn:active{
-  transform: scale(0.98);
-  box-shadow: 0 5px 15px rgba(124, 242, 255, 0.2);
+
+.btn:active {
+  transform: scale(0.96);
+  box-shadow:
+    0 6px 20px rgba(124, 242, 255, 0.25),
+    0 0 8px 3px rgba(124, 242, 255, 0.4);
 }
 
 /* touch controls */
@@ -134,10 +160,11 @@ canvas{
   .touch{
     display:flex;
   }
-  canvas{
-    width:80vw;
-    height:160vw;
-  }
+canvas {
+  width: 80vw; /* in mobile */
+  height: 160vw;
+  /* or maybe fixed sizes */
+}
 }
 .fade-overlay{
   position:absolute;
@@ -216,4 +243,48 @@ canvas{
   to {
     opacity: 1;
   }
+}
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10, 20, 40, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  transition: opacity 0.3s ease;
+}
+
+.modal.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #7cf2ff, #a07cff);
+  padding: 24px 36px;
+  border-radius: 16px;
+  box-shadow: 0 0 30px #a07cffcc;
+  color: #001;
+  text-align: center;
+  font-weight: 800;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+  width: 280px;
+}
+
+.modal-content h2 {
+  margin-bottom: 16px;
+  font-size: 2rem;
+  text-shadow: 0 0 10px #7cf2ff;
+}
+
+.modal-content p {
+  font-size: 1.25rem;
+  margin-bottom: 24px;
+}
+
+#closeModalBtn {
+  width: 100%;
 }

@@ -1,15 +1,27 @@
 /* ---------- config ---------- */
-const COLS=10, ROWS=20, BLOCK=24;
+const COLS=10, ROWS=20, BLOCK=36;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const bgCanvas = document.getElementById('bgCanvas');
 const bgCtx = bgCanvas.getContext('2d');
+let width, height;
+
 const fxOverlay = document.getElementById('fxOverlay');
 
 let grid = createGrid();
-const pieces = 'IJLOSTZ';
-const colors = {I:'#59f0ff',J:'#6bb2ff',L:'#ffb86b',O:'#ffd86b',S:'#6bff9d',T:'#c78bff',Z:'#ff6b94'};
+const pieces = 'IJLOSTZUX';
 
+const colors = {
+  I:'#59f0ff',
+  J:'#6bb2ff',
+  L:'#ffb86b',
+  O:'#ffd86b',
+  S:'#6bff9d',
+  T:'#c78bff',
+  Z:'#ff6b94',
+  U:'#ffa6ff',
+  X:'#a6ffea',
+};
 let cur = null, curX=0, curY=0;
 let displayedY = 0; // for smooth tween
 let dropInterval=800, lastTime=0, dropCounter=0;
@@ -29,7 +41,26 @@ function createPiece(type){
   if(type==='S')return[[0,1,1],[1,1,0],[0,0,0]];
   if(type==='T')return[[0,1,0],[1,1,1],[0,0,0]];
   if(type==='Z')return[[1,1,0],[0,1,1],[0,0,0]];
+
+  
+
+  if(type==='U')return[
+  [1,0,1],
+  [1,1,1],
+  [0,0,0]
+];
+
+if(type==='X')return[
+  [0,1,0],
+  [1,1,1],
+  [0,1,0]
+];
+
+
+
+
 }
+
 function rotateMatrix(m){
   const N = m.length;
   const res = Array.from({length:N},()=>Array(N).fill(0));
@@ -156,7 +187,9 @@ function roundRect(ctx,x,y,w,h,r,fill,stroke){
   if(stroke) ctx.stroke();
 }
 
-/* draw grid + trails + piece with smooth tween */
+
+let displayedX = curX; // add this globally
+
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle='rgba(0,0,0,0.45)';
@@ -187,11 +220,17 @@ function draw(){
     ctx.globalAlpha = 1;
   }
 
-  displayedY += (curY - displayedY) * 0.25;
+  // tween before drawing ghost and piece
+  displayedX += (curX - displayedX) * 0.15;
+  displayedY += (curY - displayedY) * 0.1;
 
   if(cur){
-    drawMatrix(cur, {x:curX, y: displayedY});
+    drawGhost(); // ghost glows smoother now
+    drawMatrix(cur, {x: displayedX, y: displayedY});
   }
+}
+
+
 
   if(ripple){
     ripple.t += 1/60;
@@ -203,7 +242,7 @@ function draw(){
   } else {
     fxOverlay.style.background = 'transparent';
   }
-}
+
 
 /* ---------- game loop ---------- */
 function update(time=0){
@@ -301,40 +340,77 @@ function playSound(type, amt=1){
 }
 
 /* ---------- background particle field ---------- */
-function fitBG(){
-  bgCanvas.width = innerWidth;
-  bgCanvas.height = innerHeight;
+
+function resize() {
+  width = bgCanvas.width = window.innerWidth;
+  height = bgCanvas.height = window.innerHeight;
 }
-fitBG();
-window.addEventListener('resize', fitBG);
-const particles = Array.from({length:80}).map(_=>({
-  x: Math.random()*bgCanvas.width,
-  y: Math.random()*bgCanvas.height,
-  r: 0.6 + Math.random()*2.6,
-  vx: (Math.random()-0.5)*0.15,
-  vy: (Math.random()-0.5)*0.15,
-  hue: Math.random()*360
+resize();
+window.addEventListener('resize', resize);
+
+// Just one particles array with better velocity and size range
+const particles = Array.from({length: 100}).map(() => ({
+  x: Math.random() * width,
+  y: Math.random() * height,
+  r: 1 + Math.random() * 3,
+  vx: (Math.random() - 0.5) * 0.3,  // slower, smoother moves
+  vy: (Math.random() - 0.5) * 0.3,
+  alpha: 0.2 + Math.random() * 0.6,
+  color: colors[Math.floor(Math.random() * colors.length)]
 }));
-function drawBG(){
-  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-  for(const p of particles){
-    p.x += p.vx;
-    p.y += p.vy;
-    if(p.x<0) p.x = bgCanvas.width;
-    if(p.x>bgCanvas.width) p.x = 0;
-    if(p.y<0) p.y = bgCanvas.height;
-    if(p.y>bgCanvas.height) p.y = 0;
-    const g = bgCtx.createRadialGradient(p.x,p.y,p.r*0.2,p.x,p.y,p.r*6);
-    g.addColorStop(0, `hsla(${p.hue},90%,65%,0.12)`);
-    g.addColorStop(1, `rgba(10,10,12,0)`);
-    bgCtx.fillStyle = g;
+
+const solarColors = [
+  'rgba(255, 255, 204, 0.9)', // pale yellow
+  'rgba(255, 204, 102, 0.85)', // soft orange
+  'rgba(255, 153, 51, 0.8)',   // bright orange
+  'rgba(255, 255, 153, 0.7)',  // light yellow
+];
+
+
+const solarStars = Array.from({length: 150}).map(() => ({
+  x: Math.random() * width,
+  y: Math.random() * height,
+  r: 0.8 + Math.random() * 2.2,   // tiny radius
+  vx: (Math.random() - 0.5) * 0.2,
+  vy: (Math.random() - 0.5) * 0.2,
+  alpha: 0.5 + Math.random() * 0.5 // soft brightness
+}));
+
+function drawSolarStars() {
+  bgCtx.clearRect(0, 0, width, height);
+  bgCtx.fillStyle = '#0b0f1a'; // dark background
+  bgCtx.fillRect(0, 0, width, height);
+
+  solarStars.forEach(star => {
+    star.x += star.vx;
+    star.y += star.vy;
+
+    if (star.x < 0) star.x = width;
+    else if (star.x > width) star.x = 0;
+    if (star.y < 0) star.y = height;
+    else if (star.y > height) star.y = 0;
+
+    // Flicker a bit
+    star.alpha += (Math.random() - 0.5) * 0.05;
+    star.alpha = Math.min(Math.max(star.alpha, 0.3), 1);
+
     bgCtx.beginPath();
-    bgCtx.arc(p.x,p.y,p.r*6,0,Math.PI*2);
+    bgCtx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+    bgCtx.fillStyle = `rgba(255, 255, 200, ${star.alpha.toFixed(2)})`;
+    bgCtx.shadowColor = 'rgba(255, 255, 200, 0.5)';
+    bgCtx.shadowBlur = star.r * 3;
     bgCtx.fill();
-  }
-  requestAnimationFrame(drawBG);
+
+    bgCtx.shadowBlur = 0;
+  });
+
+  requestAnimationFrame(drawSolarStars);
 }
-drawBG();
+
+drawSolarStars();
+
+
+
 
 /* ---------- init ---------- */
 updateUI();
@@ -344,23 +420,8 @@ playerReset();
 
 let gameActive = false;
 
-// Save scores locally
-function saveScore(score){
-  let scores = JSON.parse(localStorage.getItem('tetrisScores')||'[]');
-  scores.push(score);
-  scores.sort((a,b)=>b-a);
-  if(scores.length>5) scores.length=5;
-  localStorage.setItem('tetrisScores', JSON.stringify(scores));
-  updateLeaderboard();
-}
-function updateLeaderboard(){
-  const list = document.getElementById('leaderboardList');
-  let scores = JSON.parse(localStorage.getItem('tetrisScores')||'[]');
-  const lastThree = scores.slice(-3);
-  list.innerHTML = lastThree.length
-    ? lastThree.map((s,i)=>`<li>#${i+1}: ${s} pts</li>`).join('')
-    : '<li>No scores yet.</li>';
-}
+
+
 
 // override updateUI to disable start/enable restart buttons properly
 function setButtons(){
@@ -371,18 +432,27 @@ function setButtons(){
 // Modify playerReset so it resets properly even midgame
 function startGame(){
   gameActive = true;
+
+  // reset everything first
   grid = createGrid();
-  score = 0; level = 0; lines = 0;
-  updateUI();
-  setButtons();
-  playerReset();
-  lastTime = 0;
+  score = 0; 
+  level = 0; 
+  lines = 0;
   dropCounter = 0;
+  lastTime = 0;
   trail = [];
   ripple = null;
+
+  updateUI();
+  setButtons();
+
+  // spawn new piece AFTER reset
+  playerReset();
+
   playSound('start');
   requestAnimationFrame(update);
 }
+
 
 // New restart function
 function restartGame(){
@@ -390,14 +460,29 @@ function restartGame(){
   startGame();
 }
 
-// Hook buttons
 document.getElementById('start').onclick = () => {
   if(gameActive) return;
   startGame();
 };
 document.getElementById('restart').onclick = () => {
-  restartGame();
+  startGame();  // just call startGame to fully restart
 };
+document.getElementById('closeModalBtn').onclick = () => {
+  document.getElementById('gameOverModal').classList.add('hidden');
+  resetAll();
+};
+function resetGameState() {
+  gameActive = false;
+  grid = createGrid();
+  score = 0;
+  level = 0;
+  lines = 0;
+  updateUI();
+  playerReset(); // spawn new piece but don’t start dropping automatically
+  dropCounter = 0;
+  trail = [];
+  ripple = null;
+}
 
 // Detect game over: when playerReset immediately collides after spawn
 function playerReset(){
@@ -407,14 +492,24 @@ function playerReset(){
   curY = -Math.max(1,cur.length-2);
   displayedY = curY;
   curX = (COLS/2|0) - (cur[0].length/2|0);
-  if(collide()){
-    // game over
-    gameActive = false;
-    saveScore(score);
-    setButtons();
-    alert('Game Over! Your score: ' + score);
-  }
+if(collide()){
+  gameActive = false;
+  setButtons();
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('gameOverModal').classList.remove('hidden');
+
+
+  
+  // Reset game automatically after 2 seconds
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    restartGame();
+  }, 2000);
 }
+
+}
+
+
 
 // Add lineClear bonus points fix: (already exists, so no change)
 
@@ -425,5 +520,36 @@ updateUI = function(){
   setButtons();
 }
 
-// Init leaderboard on load
-updateLeaderboard();
+function drawGhost(){
+  if(!cur) return;
+  let ghostY = curY;
+  while(!collide(curX, ghostY + 1, cur)){
+    ghostY++;
+  }
+  ctx.globalAlpha = 0.3;
+  ctx.shadowColor = 'rgba(124, 242, 255, 0.7)';
+  ctx.shadowBlur = 12;
+  drawMatrix(cur, {x: curX, y: ghostY});
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+}
+
+function resetAll(){
+  gameActive = false;
+  grid = createGrid();
+  score = 0;
+  level = 0;
+  lines = 0;
+  dropCounter = 0;
+  lastTime = 0;
+  trail = [];
+  ripple = null;
+  cur = null;
+  curX = 0;
+  curY = 0;
+  displayedY = 0;
+
+  updateUI();
+  setButtons();
+  document.getElementById('gameOverModal').classList.add('hidden');
+}
