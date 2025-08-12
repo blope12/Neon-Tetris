@@ -1,0 +1,219 @@
+:root{
+  --bg:#0b0f1a;
+  --accent:#7cf2ff;
+  --accent-2:#a07cff;
+  --muted:#9aa4be;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  overflow:hidden;
+}
+
+/* layout */
+.wrapper{
+  display:flex;
+  gap:20px;
+  align-items:center;
+  padding:20px;
+  
+  /* fade-in */
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards;
+  will-change: opacity;
+}
+.stage{position:relative;}
+#bgCanvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:0.65;
+}
+canvas{
+  image-rendering:pixelated;
+  border-radius:12px;
+  box-shadow:0 0 30px rgba(124,242,255,0.06);
+  display:block;
+  z-index:2;
+}
+#game{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+}
+
+/* glass UI */
+.ui{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  margin-left:8px;
+  background:rgba(255,255,255,0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding:12px;
+  border-radius:12px;
+  box-shadow:0 6px 30px rgba(0,0,0,0.5);
+  min-width:120px;
+  z-index:3;
+}
+.stat{
+  background:rgba(255,255,255,0.03);
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:14px;
+  min-width:100px;
+  text-align:center;
+}
+.btn{
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+  color:#001;
+  box-shadow:0 6px 20px rgba(124,242,255,0.12);
+  width:100%;
+  
+  /* button hover scale & glow */
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  will-change: transform, box-shadow;
+}
+.btn:hover{
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(124, 242, 255, 0.25);
+}
+.btn:active{
+  transform: scale(0.98);
+  box-shadow: 0 5px 15px rgba(124, 242, 255, 0.2);
+}
+
+/* touch controls */
+.touch{
+  display:none;
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:20px;
+  z-index:4;
+  gap:12px;
+  padding:8px;
+  border-radius:16px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  backdrop-filter: blur(6px);
+}
+.touch button{
+  width:56px;
+  height:56px;
+  border-radius:12px;
+  border:none;
+  font-weight:800;
+  font-size:18px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+  box-shadow:0 6px 20px rgba(0,0,0,0.5);
+  color:white;
+}
+@media (max-width:700px){
+  .wrapper{
+    flex-direction:column;
+    gap:12px;
+  }
+  .ui{
+    flex-direction:row;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .touch{
+    display:flex;
+  }
+  canvas{
+    width:80vw;
+    height:160vw;
+  }
+}
+.fade-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,0);
+  pointer-events:none;
+  z-index:3;
+}
+
+.leaderboard ol {
+  margin: 0;
+  padding: 0;
+}
+.leaderboard ol li {
+  margin-bottom: 4px;
+}
+.leaderboard {
+  margin-top: 15px;
+  background: rgba(28, 40, 60, 0.6);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 0 20px var(--accent);
+  color: var(--accent);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+}
+
+.leaderboard h3 {
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 1.5px;
+  color: var(--accent-2);
+  text-shadow: 0 0 8px var(--accent-2);
+}
+
+#leaderboardList {
+  list-style: none;
+  padding-left: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-2) transparent;
+}
+
+#leaderboardList::-webkit-scrollbar {
+  width: 6px;
+}
+
+#leaderboardList::-webkit-scrollbar-thumb {
+  background: var(--accent-2);
+  border-radius: 6px;
+}
+
+#leaderboardList li {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: rgba(124, 242, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 15px;
+  color: white;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+}
+
+#leaderboardList li:hover {
+  background: rgba(124, 242, 255, 0.3);
+  box-shadow: 0 0 12px 3px var(--accent);
+}
+
+/* fade-in keyframes */
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
